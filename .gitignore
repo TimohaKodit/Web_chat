@@ -1,0 +1,13 @@
+# Byte-compiled files (generated when running Python)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment folder (standard naming)
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
