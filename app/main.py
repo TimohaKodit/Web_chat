@@ -40,13 +40,20 @@ html = """
 async def get():
     return HTMLResponse(html)
 
+ws_list = []
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    
     await websocket.accept()
+
+    ws_list.append(websocket)
     try:
         while True:
+            
             data = await websocket.receive_text()
-            await websocket.send_text(f"Message text was: {data}")
+            for i in ws_list:
+                await i.send_text(data)
     except WebSocketDisconnect:
+        ws_list.remove(websocket)
         print("Клиент отключился")
