@@ -40,20 +40,36 @@ html = """
 async def get():
     return HTMLResponse(html)
 
-ws_list = []
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connetion in self.active_connections:
+            await connetion.send_text(message)
+
+        
+manager = ConnectionManager()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     
-    await websocket.accept()
+    await manager.connect(websocket)
 
-    ws_list.append(websocket)
     try:
         while True:
             
             data = await websocket.receive_text()
-            for i in ws_list:
-                await i.send_text(data)
+            await manager.broadcast(data)
     except WebSocketDisconnect:
-        ws_list.remove(websocket)
+        manager.disconnect(websocket)
         print("Клиент отключился")
