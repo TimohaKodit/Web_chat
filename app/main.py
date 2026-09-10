@@ -24,9 +24,9 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def broadcast(self, message: str):
-        for conneсtion in self.active_connections:
-            await conneсtion.send_text(message)
+    async def broadcast(self, message):
+        for connection in self.active_connections:
+            await connection.send_json(message)
 
         
 manager = ConnectionManager()
@@ -39,8 +39,14 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             
-            data = await websocket.receive_text()
-            await manager.broadcast(data)
+            data = await websocket.receive_json()
+
+            user_message = data.get("text")
+            full_message = {
+                "type": 'message',
+                'text': user_message
+            }
+            await manager.broadcast(full_message)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         print("Клиент отключился")
