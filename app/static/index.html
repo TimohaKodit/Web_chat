@@ -1,31 +1,107 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("ws://localhost:8000/ws");
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web Chat</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            background: #f7f7f8;
+            color: #1a1a1a;
+        }
+        h1 { font-size: 20px; margin: 0 0 16px; }
+        #messages {
+            list-style: none;
+            margin: 0 0 16px;
+            padding: 12px;
+            height: 380px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        #messages li { padding: 4px 0; word-wrap: break-word; }
+        #messages li.system { color: #888; font-style: italic; font-size: 13px; }
+        form { display: flex; gap: 8px; }
+        input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #2b6cb0;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        button:disabled { background: #aaa; cursor: not-allowed; }
+        #status { font-size: 13px; color: #888; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Web Chat</h1>
+    <div id="status">Подключение...</div>
+
+    <ul id="messages"></ul>
+
+    <form id="chatForm">
+        <input type="text" id="messageText" autocomplete="off" placeholder="Сообщение..." />
+        <button type="submit" id="sendButton" disabled>Отправить</button>
+    </form>
+
+    <script>
+        const messages = document.getElementById("messages");
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("messageText");
+        const sendButton = document.getElementById("sendButton");
+        const status = document.getElementById("status");
+
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+
+        ws.onopen = () => {
+            status.textContent = "Подключено";
+            sendButton.disabled = false;
+        };
+
+        ws.onclose = () => {
+            status.textContent = "Соединение закрыто";
+            sendButton.disabled = true;
+        };
+
+        // Сервер присылает JSON — разбираем его и рисуем по полю type
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const item = document.createElement("li");
+
+            if (data.type === "system") {
+                item.className = "system";
+                item.textContent = data.text;
+            } else {
+                item.textContent = data.user ? `${data.user}: ${data.text}` : data.text;
             }
-        </script>
-    </body>
+
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight;
+        };
+
+        // Клиент отправляет JSON по протоколу: {"text": "..."}
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            ws.send(JSON.stringify({ text: text }));
+            input.value = "";
+        });
+    </script>
+</body>
 </html>
