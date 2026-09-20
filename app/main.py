@@ -1,6 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from json import JSONDecodeError
+from pydantic import ValidationError
+from app.schemas import StartMessage, ChatMessage, SystemMessage, ErrorMessage, Message
 
 
 
@@ -30,7 +32,7 @@ class ConnectionManager:
 
     async def broadcast(self, message):
         for connection in self.active_connections:
-            await connection.send_json(message)
+            await connection.send_json(message.model_dump())
         
 
         
@@ -42,41 +44,47 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         data = await websocket.receive_json()
-        username = data.get("user")
-        if username:
+        
+        join = StartMessage.model_validate(data)
+        
 
-            manager.add_user(websocket, username)
-            message_auth = {
-                "type": "system",
-                "text": f"{username} вошел в чат!"
-            }
-            await manager.broadcast(message_auth)
-        else:
-            await websocket.close()
-            return 
+        manager.add_user(websocket, join.user)
+        message_auth = SystemMessage(text=f"{join.user} вошел в чат!")
+        await manager.broadcast(message_auth)
+        
              
              
 
     
         
         while True:
-                data = await websocket.receive_json()
+                try:
+                    data = await websocket.receive_json()
             
 
-                user_message = data.get("text")
-            
-                full_message = {
-                "type": 'message',
-                "user": username,
-                'text': user_message
-                }
-                await manager.broadcast(full_message)
+                    user_message = ChatMessage.model_validate(data)
+                    
+                    
+                    mes = Message(user=join.user, text=user_message.text)
+                    await manager.broadcast(mes)
+                except ValidationError as e:
+                    message_error = ErrorMessage(text="Message incorrect")
+                    await websocket.send_json(message_error.model_dump())
+                    print(e)
+
     except WebSocketDisconnect:
             username = manager.disconnect(websocket)
             if username:
-                await manager.broadcast({"type": "system", "text": f"{username} вышел из чата."})
+                log_out_mes = SystemMessage(text=f'{join.user} вышел из чата')
+                await manager.broadcast(log_out_mes)
     except JSONDecodeError:
         await websocket.close()
         username = manager.disconnect(websocket)
         if username:
-            await manager.broadcast({"type": "system", "text": f"{username} вышел из чата."})
+            log_out_mes = SystemMessage(text=f'{join.user} вышел из чата')
+            await manager.broadcast(log_out_mes)
+    except ValidationError:
+        await websocket.close()
+        username = manager.disconnect(websocket)
+
+        
