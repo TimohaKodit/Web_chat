@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
-
+from app.config import settings
 from app.routers.ws import router_ws
 
 

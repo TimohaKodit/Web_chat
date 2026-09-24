@@ -1,8 +1,9 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.services.connetion_manager import manager
+from app.services.connection_manager import manager
 from app.schemas import StartMessage, ChatMessage, SystemMessage, ErrorMessage, Message
 from pydantic import ValidationError
 from json import JSONDecodeError
+
 
 router_ws = APIRouter()
 
