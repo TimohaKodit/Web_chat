@@ -11,3 +11,6 @@ env/
 
 # Environment variables and secrets
 .env
+
+
+AGENTS.md
