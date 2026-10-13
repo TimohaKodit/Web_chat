@@ -12,5 +12,5 @@ env/
 # Environment variables and secrets
 .env
 
-
+CLAUDE.md
 AGENTS.md
