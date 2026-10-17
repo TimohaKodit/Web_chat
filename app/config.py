@@ -5,6 +5,6 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = Field(min_length=3)
 
-    model_config = SettingsConfigDict(env_file='.env')
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore')
 
 settings = Settings()
