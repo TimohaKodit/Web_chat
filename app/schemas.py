@@ -21,7 +21,7 @@ class SystemMessage(BaseModel):
     text: str = Field(max_length=50, min_length=1)
 
 class Message(BaseModel):
-    user: str = Field(max_length=30, min_lenght=1)
+    user: str = Field(max_length=30, min_length=1)
     text: str = Field(max_length=50, min_length=1)
     type: Literal['message'] = 'message'
     
