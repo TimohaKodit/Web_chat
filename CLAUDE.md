@@ -194,7 +194,7 @@ Get-Process python | Stop-Process -Force
   - **Доки.** <https://docs.pydantic.dev/latest/concepts/pydantic_settings/> ,
     <https://12factor.net/ru/config>
 
-- [ ] **11. PostgreSQL в Docker**
+- [x] **11. PostgreSQL в Docker**
   - **Зачем.** Ставить Postgres на Windows руками — боль и невоспроизводимость.
     Контейнер поднимается одной командой и одинаково работает у всех.
   - **Изучить.** Разница между образом и контейнером; `docker compose` и файл
@@ -214,7 +214,7 @@ Get-Process python | Stop-Process -Force
     не в докере — подключается к базе по `localhost:5432`.
   - **Доки.** <https://hub.docker.com/_/postgres> , <https://docs.docker.com/compose/>
 
-- [ ] **12. SQLAlchemy async + Alembic**
+- [x] **12. SQLAlchemy async + Alembic**
   - **Зачем.** Писать SQL строками — легко получить инъекцию и опечатку без
     подсказок IDE. ORM даёт таблицы как питоновские классы. Миграции — история
     изменений схемы, как git для базы.
